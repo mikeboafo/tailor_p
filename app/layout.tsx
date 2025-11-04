@@ -1,29 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import "./globals.css"; // keep your styles
 
 export const metadata: Metadata = {
   title: "TailorLink",
   description: "Get connected with professional tailors easily and efficiently.",
   icons: {
     icon: [
-      { url: '/ti1.png', sizes: '16x16', type: 'image/png' },
-      { url: '/ti1.png', sizes: '32x32', type: 'image/png' },
-      { url: '/ti1.png', sizes: 'any' },
+      { url: "/ti1.png", sizes: "16x16", type: "image/png" },
+      { url: "/ti1.png", sizes: "32x32", type: "image/png" },
+      { url: "/ti1.png", sizes: "any" },
     ],
-    apple: [
-      { url: '/ti1.png', sizes: '180x180', type: 'image/png' },
-    ],
+    apple: [{ url: "/ti1.png", sizes: "180x180", type: "image/png" }],
   },
 };
 
@@ -34,9 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className="font-sans antialiased">
         {children}
       </body>
     </html>
