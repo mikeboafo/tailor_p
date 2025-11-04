@@ -17,7 +17,7 @@ import {
   Play,
   Sparkles,
 } from 'lucide-react';
-import Chatbot from './chatbot/chatbot'; 
+import Chatbot from './Chatbot/chatbot'; 
 
 export default function TailorLinkLanding() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
