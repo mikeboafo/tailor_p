@@ -145,7 +145,6 @@ const apiService = {
       'cancelled': 'cancelled'
     };
 
-    // Debug: Log the incoming data structure
     console.log('Transforming order data:', {
       order_number: data.order_number,
       status: data.status,
@@ -179,7 +178,6 @@ const apiService = {
     return orderStatus;
   },
 
-
   async findTailors(latitude: number, longitude: number, serviceType?: string): Promise<Tailor[]> {
     try {
       const response = await fetch('http://192.168.100.145:8000/api/v2/tailors/nearby', {
@@ -204,12 +202,12 @@ const apiService = {
 
   // Get user location
   async getUserLocation(): Promise<{ latitude: number; longitude: number } | null> {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve(null);
-        return;
-      }
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      return null;
+    }
 
+    return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           resolve({
@@ -226,7 +224,6 @@ const apiService = {
     });
   },
 };
-
 
 const OrderStatusComponent: React.FC<{ order: OrderStatus }> = ({ order }) => {
   const statusColors = {
@@ -248,7 +245,6 @@ const OrderStatusComponent: React.FC<{ order: OrderStatus }> = ({ order }) => {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 mt-2 shadow-sm">
       <div className="flex justify-between items-start mb-3">
-       
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[order.status]}`}>
           {statusLabels[order.status]}
         </span>
@@ -354,7 +350,6 @@ const FALLBACK_RESPONSES: Record<string, { text: string; quickReplies?: string[]
   }
 };
 
-
 type ChatHeaderProps = {
   onMinimize: () => void;
   onClose: () => void;
@@ -388,7 +383,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ onMinimize, onClose, isMinimize
   </div>
 );
 
-
 const TypingIndicator: React.FC = () => (
   <div className="flex items-center gap-2 my-2 animate-fade-in">
     <Bot className="w-5 h-5 text-blue-500" />
@@ -400,7 +394,6 @@ const TypingIndicator: React.FC = () => (
     <span className="text-xs text-gray-400 ml-2">TailorLink is typing...</span>
   </div>
 );
-
 
 type ChatInputProps = {
   inputText: string;
@@ -448,18 +441,41 @@ const ChatInput: React.FC<ChatInputProps> = ({
   </div>
 );
 
+// Safe localStorage hook
+const useLocalStorage = <T,>(key: string, initialValue: T) => {
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+    try {
+      const item = window.localStorage.getItem(key);
+      if (item) {
+        setStoredValue(JSON.parse(item));
+      }
+    } catch (error) {
+      console.warn(`Error reading localStorage key "${key}":`, error);
+    }
+  }, [key]);
+
+  const setValue = (value: T | ((val: T) => T)) => {
+    if (!isClient) return;
+    
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.warn(`Error setting localStorage key "${key}":`, error);
+    }
+  };
+
+  return [storedValue, setValue] as const;
+};
 
 export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(() => {
-    if (typeof window === 'undefined') return [];
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [messages, setMessages] = useLocalStorage<Message[]>(STORAGE_KEY, []);
   const [sessionId] = useState(() => {
     if (typeof window === 'undefined') return uid("sess_");
     const stored = localStorage.getItem(SESSION_KEY);
@@ -475,9 +491,16 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [isClient, setIsClient] = useState(false);
 
+  // Set client flag
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
+    if (!isClient) return;
+
     const scrollToBottom = () => {
       messagesEndRef.current?.scrollIntoView({ 
         behavior: "smooth",
@@ -487,42 +510,27 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
 
     const timeoutId = setTimeout(scrollToBottom, 100);
     return () => clearTimeout(timeoutId);
-  }, [messages, isTyping]);
+  }, [messages, isTyping, isClient]);
 
-
+  // Initialize welcome message
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (!isClient || messages.length > 0) return;
 
-    const timeoutId = setTimeout(() => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-      } catch (error) {
-        console.warn('Failed to save chat history:', error);
-      }
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [messages]);
-
-  useEffect(() => {
-    if (messages.length === 0 && typeof window !== 'undefined') {
-      const welcomeMessage: Message = {
-        id: uid("welcome_"),
-        text: "Hello! I'm your TailorLink assistant. I can help you:\n\n• Find expert tailors near you\n• Track your orders in real-time\n• Get pricing estimates\n• Schedule fittings\n• Answer measurement questions\n\nHow can I assist you today?",
-        isUser: false,
-        timestamp: new Date().toISOString(),
-        quickReplies: [
-          "Find tailors near me",
-          "Track my order",
-          "Pricing information", 
-          "Measurement guide",
-          "Download the app"
-        ],
-      };
-      setMessages([welcomeMessage]);
-    }
-  }, [messages.length]);
-
+    const welcomeMessage: Message = {
+      id: uid("welcome_"),
+      text: "Hello! I'm your TailorLink assistant. I can help you:\n\n• Find expert tailors near you\n• Track your orders in real-time\n• Get pricing estimates\n• Schedule fittings\n• Answer measurement questions\n\nHow can I assist you today?",
+      isUser: false,
+      timestamp: new Date().toISOString(),
+      quickReplies: [
+        "Find tailors near me",
+        "Track my order",
+        "Pricing information", 
+        "Measurement guide",
+        "Download the app"
+      ],
+    };
+    setMessages([welcomeMessage]);
+  }, [messages.length, isClient, setMessages]);
 
   const simulateTyping = useCallback((callback: () => void, delay = 800) => {
     setIsTyping(true);
@@ -533,11 +541,11 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
     return () => clearTimeout(timeoutId);
   }, []);
 
-
   const handleDownloadApp = useCallback(() => {
+    if (!isClient) return;
+    
     window.open(PLAY_STORE_URL, '_blank', 'noopener,noreferrer');
     
- 
     simulateTyping(() => {
       const botMsg: Message = {
         id: uid("bot_"),
@@ -549,13 +557,11 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
       };
       setMessages(prev => [...prev, botMsg]);
     });
-  }, [simulateTyping]);
-
+  }, [simulateTyping, setMessages, isClient]);
 
   const processOrderTracking = useCallback(async (orderInput: string) => {
     setIsSending(true);
     
- 
     let orderNumber = orderInput;
     const orderMatch = orderInput.match(/(ORD-[A-Z0-9]{6,15}|[A-Z0-9]{6,15})/i);
     if (orderMatch) {
@@ -564,31 +570,31 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
 
     const order = await apiService.trackOrder(orderNumber);
     
-   simulateTyping(() => {
-  if (order) {
-    const botMsg: Message = {
-      id: uid("bot_"),
-      text: `Here's the current status of your order **${order.orderId}**:`,
-      isUser: false,
-      timestamp: new Date().toISOString(),
-      type: 'order_status',
-      meta: { order },
-      quickReplies: ["Track another order", "Contact tailor", "Download app for live tracking", "Main menu"],
-    };
-    setMessages(prev => [...prev, botMsg]);
-  } else {
-    const botMsg: Message = {
-      id: uid("bot_"),
-      text: `I couldn't find order "${orderNumber}". Please check that:\n\n• The order number is correct (format: ORD-XXXXXXX)\n• The order exists in our system\n\nYou can also download our app for real-time order tracking!`,
-      isUser: false,
-      timestamp: new Date().toISOString(),
-      quickReplies: ["Try again", "Download app", "Contact support", "Main menu"],
-    };
-    setMessages(prev => [...prev, botMsg]);
-  }
-  setIsSending(false);
-});
-  }, [simulateTyping]);
+    simulateTyping(() => {
+      if (order) {
+        const botMsg: Message = {
+          id: uid("bot_"),
+          text: `Here's the current status of your order **${order.orderId}**:`,
+          isUser: false,
+          timestamp: new Date().toISOString(),
+          type: 'order_status',
+          meta: { order },
+          quickReplies: ["Track another order", "Contact tailor", "Download app for live tracking", "Main menu"],
+        };
+        setMessages(prev => [...prev, botMsg]);
+      } else {
+        const botMsg: Message = {
+          id: uid("bot_"),
+          text: `I couldn't find order "${orderNumber}". Please check that:\n\n• The order number is correct (format: ORD-XXXXXXX)\n• The order exists in our system\n\nYou can also download our app for real-time order tracking!`,
+          isUser: false,
+          timestamp: new Date().toISOString(),
+          quickReplies: ["Try again", "Download app", "Contact support", "Main menu"],
+        };
+        setMessages(prev => [...prev, botMsg]);
+      }
+      setIsSending(false);
+    });
+  }, [simulateTyping, setMessages]);
 
   const processFindTailors = useCallback(async (userText: string) => {
     setIsSending(true);
@@ -645,7 +651,6 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
         });
       }
     } else {
-
       simulateTyping(() => {
         const botMsg: Message = {
           id: uid("bot_"),
@@ -659,8 +664,7 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
         setIsSending(false);
       });
     }
-  }, [simulateTyping, handleDownloadApp]);
-
+  }, [simulateTyping, handleDownloadApp, setMessages]);
 
   const sendMessage = useCallback(async (rawInput: string) => {
     const trimmed = rawInput.trim();
@@ -680,12 +684,10 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
     const heuristic = detectIntentHeuristic(trimmed);
 
     if (heuristic.intent === 'order_tracking') {
-
       const orderMatch = trimmed.match(/(ORD-[A-Z0-9]{6,15}|[A-Z0-9]{6,15})/i);
       if (orderMatch) {
         await processOrderTracking(orderMatch[1]);
       } else {
-
         simulateTyping(() => {
           const botMsg: Message = {
             id: uid("bot_"),
@@ -711,9 +713,7 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
       return;
     }
 
-
     const response = FALLBACK_RESPONSES[heuristic.intent] || FALLBACK_RESPONSES.unknown;
-
 
     const lastBotMessages = messages.filter(m => !m.isUser).slice(-3);
     const isDuplicateResponse = lastBotMessages.some(msg => 
@@ -748,8 +748,7 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
       setMessages(prev => [...prev, botMsg]);
       setIsSending(false);
     });
-  }, [messages, processOrderTracking, processFindTailors, simulateTyping, handleDownloadApp]);
-
+  }, [messages, processOrderTracking, processFindTailors, simulateTyping, handleDownloadApp, setMessages]);
 
   const handleQuickReply = useCallback((reply: string) => {
     if (reply.toLowerCase().includes('download') || reply === "Download Now" || reply === "Download app") {
@@ -760,15 +759,10 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
   }, [sendMessage, handleDownloadApp]);
 
   const handleClearChat = useCallback(() => {
-    if (window.confirm("Clear all chat history? This action cannot be undone.")) {
+    if (isClient && window.confirm("Clear all chat history? This action cannot be undone.")) {
       setMessages([]);
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch (error) {
-        console.warn('Failed to clear chat history:', error);
-      }
     }
-  }, []);
+  }, [setMessages, isClient]);
 
   const toggleChat = useCallback(() => {
     const newState = !isOpen;
@@ -780,69 +774,67 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
     setIsMinimized(prev => !prev);
   }, []);
 
-
   type MessageBubbleProps = {
     message: Message;
     onQuickReply: (reply: string) => void;
   };
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onQuickReply }) => {
+  const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onQuickReply }) => {
+    const renderTextWithFormatting = (text: string) => {
+      const parts = text.split(/(\*\*.*?\*\*)/g);
+      
+      return parts.map((part, index) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          const boldText = part.slice(2, -2);
+          return (
+            <span key={index} className="font-semibold">
+              {boldText}
+            </span>
+          );
+        }
+        return part;
+      });
+    };
 
-  const renderTextWithFormatting = (text: string) => {
-    const parts = text.split(/(\*\*.*?\*\*)/g);
-    
-    return parts.map((part, index) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        const boldText = part.slice(2, -2);
-        return (
-          <span key={index} className="font-semibold">
-            {boldText}
-          </span>
-        );
-      }
-      return part;
-    });
-  };
-
-  return (
-    <div
-      className={`flex ${message.isUser ? "justify-end" : "justify-start"} my-2 animate-message-in`}
-    >
+    return (
       <div
-        className={`max-w-[80%] px-4 py-2 rounded-2xl shadow ${
-          message.isUser
-            ? "bg-blue-600 text-white rounded-br-md"
-            : "bg-white text-gray-900 border border-gray-200 rounded-bl-md"
-        }`}
+        className={`flex ${message.isUser ? "justify-end" : "justify-start"} my-2 animate-message-in`}
       >
-        <div className="whitespace-pre-line">
-          {renderTextWithFormatting(message.text)}
+        <div
+          className={`max-w-[80%] px-4 py-2 rounded-2xl shadow ${
+            message.isUser
+              ? "bg-blue-600 text-white rounded-br-md"
+              : "bg-white text-gray-900 border border-gray-200 rounded-bl-md"
+          }`}
+        >
+          <div className="whitespace-pre-line">
+            {renderTextWithFormatting(message.text)}
+          </div>
+          
+          {message.type === 'order_status' && message.meta?.order && (
+            <div className="mt-3">
+              <OrderStatusComponent order={message.meta.order} />
+            </div>
+          )}
+          
+          {message.quickReplies && message.quickReplies.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2 animate-quick-replies">
+              {message.quickReplies.map((reply, idx) => (
+                <button
+                  key={idx}
+                  className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs hover:bg-blue-200 transition"
+                  onClick={() => onQuickReply(reply)}
+                  type="button"
+                >
+                  {reply}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-        
-        {message.type === 'order_status' && message.meta?.order && (
-          <div className="mt-3">
-            <OrderStatusComponent order={message.meta.order} />
-          </div>
-        )}
-        
-        {message.quickReplies && message.quickReplies.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2 animate-quick-replies">
-            {message.quickReplies.map((reply, idx) => (
-              <button
-                key={idx}
-                className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs hover:bg-blue-200 transition"
-                onClick={() => onQuickReply(reply)}
-                type="button"
-              >
-                {reply}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
-    </div>
-  );
-};
+    );
+  };
 
   const messageList = useMemo(() => (
     <div 
@@ -866,6 +858,18 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onQuickReply }) 
   const positionClass = position === 'bottom-left' 
     ? 'left-4 sm:left-6' 
     : 'right-4 sm:right-6';
+
+  if (!isClient) {
+    // Return a minimal version for SSR
+    return (
+      <button
+        className={`fixed bottom-4 sm:bottom-6 ${positionClass} bg-gradient-to-br from-blue-600 to-blue-700 text-white p-4 rounded-2xl shadow-2xl z-50`}
+        aria-label="Open TailorLink chat assistant"
+      >
+        <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+      </button>
+    );
+  }
 
   return (
     <>
