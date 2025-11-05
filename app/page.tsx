@@ -291,10 +291,10 @@ export default function TailorLinkLanding() {
               href="https://play.google.com/store/apps/details?id=com.wgghana.tailorsuite"
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl hover:shadow-blue-500/50 flex items-center gap-3 overflow-hidden focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
+              className="group relative bg-gradient-to-r from-[#053B64] via-[#033D64] to-[#47A7D9] hover:from-[#033D64] hover:via-[#47A7D9] hover:to-[#053B64] text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl hover:shadow-[#47A7D9]/50 flex items-center gap-3 overflow-hidden focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#033D64]"
               aria-label="Download TailorLink app from Google Play"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#053B64] via-[#033D64] to-[#47A7D9] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <Play className="w-5 h-5 relative z-10" aria-hidden="true" />
               <span className="relative z-10 text-sm sm:text-base">Download App</span>
               <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 relative z-10 transform group-hover:translate-x-1 transition-transform" aria-hidden="true" />
@@ -422,54 +422,55 @@ export default function TailorLinkLanding() {
       </section>
 
       <section 
-        id="download" 
-        className="py-16 sm:py-20 bg-gradient-to-br from-blue-600 to-blue-800 text-white relative overflow-hidden"
-        aria-label="Download section"
+  id="download" 
+  className="py-16 sm:py-20 bg-gradient-to-r from-[#053B64] via-[#033D64] to-[#47A7D9] text-white relative overflow-hidden"
+  aria-label="Download section"
+>
+  <div className="absolute top-0 left-0 w-64 h-64 sm:w-96 sm:h-96 bg-blue-300 rounded-full blur-3xl opacity-20 -translate-x-48 -translate-y-48 animate-float" aria-hidden="true" />
+  <div className="absolute bottom-0 right-0 w-64 h-64 sm:w-96 sm:h-96 bg-blue-400 rounded-full blur-3xl opacity-30 translate-x-48 translate-y-48 animate-float-delayed" aria-hidden="true" />
+
+  <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6">
+    <div className="observe-me">
+      <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 text-white">
+        Ready to Transform Your{' '}
+        <span className="bg-gradient-to-r from-blue-400 to-blue-200 bg-clip-text text-transparent">
+          Tailoring Experience?
+        </span>
+      </h2>
+      <p className="text-base sm:text-lg md:text-xl text-blue-50 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed">
+        Join thousands of users who trust TailorLink for perfect fits, reliable service, 
+        and exceptional craftsmanship.
+      </p>
+    </div>
+
+    <div className="observe-me animation-delay-200">
+      <a
+        href="https://play.google.com/store/apps/details?id=com.wgghana.tailorsuite"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group inline-flex items-center gap-3 sm:gap-4 bg-white text-blue-600 hover:bg-gray-100 px-6 sm:px-10 py-3 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-white/20 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
+        aria-label="Download TailorLink app"
       >
-        <div className="absolute top-0 left-0 w-64 h-64 sm:w-96 sm:h-96 bg-blue-400 rounded-full blur-3xl opacity-20 -translate-x-48 -translate-y-48 animate-float" aria-hidden="true" />
-        <div className="absolute bottom-0 right-0 w-64 h-64 sm:w-96 sm:h-96 bg-blue-500 rounded-full blur-3xl opacity-30 translate-x-48 translate-y-48 animate-float-delayed" aria-hidden="true" />
+        <Play className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
+        Download TailorLink
+        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 transform group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+      </a>
+    </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6">
-          <div className="observe-me">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
-              Ready to Transform Your{' '}
-              <span className="bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">
-                Tailoring Experience?
-              </span>
-            </h2>
-            <p className="text-base sm:text-lg md:text-xl text-blue-100 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed">
-              Join thousands of users who trust TailorLink for perfect fits, reliable service, 
-              and exceptional craftsmanship.
-            </p>
-          </div>
-
-          <div className="observe-me animation-delay-200">
-            <a
-              href="https://play.google.com/store/apps/details?id=com.wgghana.tailorsuite"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 sm:gap-4 bg-white text-blue-600 hover:bg-gray-100 px-6 sm:px-10 py-3 sm:py-5 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-white/20 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
-              aria-label="Download TailorLink app"
-            >
-              <Play className="w-5 h-5 sm:w-6 sm:h-6" aria-hidden="true" />
-              Download TailorLink
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 transform group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-            </a>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mt-12 sm:mt-16 observe-me animation-delay-400">
-            {stats.map((stat, index) => (
-              <div 
-                key={index} 
-                className="text-center transform hover:scale-105 transition-transform duration-300"
-              >
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-2">{stat.number}</div>
-                <div className="text-blue-200 font-medium text-sm sm:text-base">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mt-12 sm:mt-16 observe-me animation-delay-400">
+      {stats.map((stat, index) => (
+        <div 
+          key={index} 
+          className="text-center transform hover:scale-105 transition-transform duration-300"
+        >
+          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-2">{stat.number}</div>
+          <div className="text-blue-100 font-medium text-sm sm:text-base">{stat.label}</div>
         </div>
-      </section>
+      ))}
+    </div>
+  </div>
+</section>
+
 
       <footer className="bg-gray-900 text-white py-12 relative overflow-hidden" aria-label="Footer">
         <div className="absolute top-0 left-0 w-64 h-64 bg-blue-600 rounded-full blur-3xl opacity-10 -translate-x-32 -translate-y-32" aria-hidden="true" />
@@ -626,7 +627,7 @@ export default function TailorLinkLanding() {
         /* Focus styles for accessibility */
         button:focus-visible,
         a:focus-visible {
-          outline: 2px solid #3b82f6;
+          outline: 2px solid #48A7DD;
           outline-offset: 2px;
         }
 

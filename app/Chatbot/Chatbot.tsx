@@ -875,7 +875,13 @@ export default function Chatbot({ position = 'bottom-right' }: ChatbotProps) {
     <>
       <button
         onClick={toggleChat}
-        className={`fixed bottom-4 sm:bottom-6 ${positionClass} bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white p-4 rounded-2xl shadow-2xl transition-all duration-300 z-50 group hover:scale-110 hover:shadow-3xl focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 active:scale-95`}
+        className={`fixed bottom-4 sm:bottom-6 ${positionClass} 
+  bg-gradient-to-br from-[#053B64] via-[#033D64] to-[#47A7D9] 
+  hover:from-[#033D64] hover:via-[#47A7D9] hover:to-[#053B64] 
+  text-white p-4 rounded-2xl shadow-2xl transition-all duration-300 
+  z-50 group hover:scale-110 hover:shadow-3xl 
+  focus:outline-none focus:ring-4 focus:ring-[#47A7D9] focus:ring-opacity-50 
+  active:scale-95`}
         aria-label="Open TailorLink chat assistant"
         aria-expanded={isOpen}
       >
